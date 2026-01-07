@@ -16,7 +16,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { key } = await params;
+    const { key: rawKey } = await params;
+    const key = rawKey?.trim();
     
     if (!key) {
       return NextResponse.json({ error: "Key is required" }, { status: 400 });

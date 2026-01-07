@@ -45,27 +45,22 @@ export function EditFlagDialog({ open, onOpenChange, onFlagUpdated, flag }: Edit
     setLoading(true);
 
     try {
-      // If the key changed, we need to delete the old one and create a new one
-      if (key !== flag.key) {
-        // Delete old flag
-        const deleteResponse = await fetch(`/api/flags/${flag.key}`, {
-          method: "DELETE",
-        });
+      // Use atomic rename via a single POST request
+      const trimmedKey = key.trim();
+      const payload = {
+        key: trimmedKey,
+        enabled: flag.enabled,
+        oldKey: trimmedKey !== flag.key ? flag.key : undefined
+      };
 
-        if (!deleteResponse.ok) {
-          throw new Error("Failed to delete old flag");
-        }
+      const response = await fetch("/api/flags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-        // Create new flag with same enabled state
-        const createResponse = await fetch("/api/flags", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key, enabled: flag.enabled }),
-        });
-
-        if (!createResponse.ok) {
-          throw new Error("Failed to create new flag");
-        }
+      if (!response.ok) {
+        throw new Error("Failed to update flag");
       }
       
       toast.success("Flag updated successfully!");

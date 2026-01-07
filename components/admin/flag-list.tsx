@@ -86,27 +86,21 @@ export function FlagList({ flags, searchQuery, onToggleFlag, onFlagCreated, onFl
 
     setSaving(true);
     try {
-      // If key changed, delete old and create new (SEQUENTIALLY to avoid race condition)
-      if (editValue !== originalKey) {
-        // Step 1: Delete old key first
-        const deleteResponse = await fetch(`/api/flags/${encodeURIComponent(originalKey)}`, { 
-          method: "DELETE" 
-        });
-        
-        if (!deleteResponse.ok) {
-          throw new Error("Failed to delete old flag");
-        }
-        
-        // Step 2: Create new key
-        const createResponse = await fetch("/api/flags", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: editValue, enabled }),
-        });
-        
-        if (!createResponse.ok) {
-          throw new Error("Failed to create new flag");
-        }
+      // Use atomic rename if key changed, or just update if not
+      const trimmedKey = editValue.trim();
+      
+      const response = await fetch("/api/flags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          key: trimmedKey, 
+          oldKey: editValue !== originalKey ? originalKey : undefined,
+          enabled 
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to update flag");
       }
       
       toast.success("Flag updated successfully!");
@@ -124,13 +118,14 @@ export function FlagList({ flags, searchQuery, onToggleFlag, onFlagCreated, onFl
   };
 
   const saveNewFlag = async () => {
-    if (!newFlagKey.trim()) {
+    const trimmedKey = newFlagKey.trim();
+    if (!trimmedKey) {
       toast.error("Flag key cannot be empty");
       return;
     }
 
     // Check if the key already exists
-    if (flags.some(f => f.key === newFlagKey)) {
+    if (flags.some(f => f.key === trimmedKey)) {
       toast.error("A flag with this key already exists");
       return;
     }
@@ -140,7 +135,7 @@ export function FlagList({ flags, searchQuery, onToggleFlag, onFlagCreated, onFl
       const response = await fetch("/api/flags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: newFlagKey, enabled: false }),
+        body: JSON.stringify({ key: trimmedKey, enabled: false }),
       });
 
       if (!response.ok) {

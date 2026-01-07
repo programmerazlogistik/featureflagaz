@@ -48,7 +48,7 @@ export async function updateFlag(key: string, enabled: boolean): Promise<void> {
   const response = await fetch("/api/flags", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key, enabled }),
+    body: JSON.stringify({ key: key.trim(), enabled }),
   });
   
   if (!response.ok) {
@@ -61,7 +61,9 @@ export async function saveBatch(changes: { key: string, enabled: boolean }[]): P
   const response = await fetch("/api/flags", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ batch: changes }),
+    body: JSON.stringify({ 
+      batch: changes.map(c => ({ ...c, key: c.key.trim() })) 
+    }),
   });
   
   if (!response.ok) {
@@ -74,7 +76,7 @@ export async function createFlag(key: string): Promise<void> {
   const response = await fetch("/api/flags", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key, enabled: false }),
+    body: JSON.stringify({ key: key.trim(), enabled: false }),
   });
   
   if (!response.ok) {
@@ -85,7 +87,7 @@ export async function createFlag(key: string): Promise<void> {
 
 // Delete a flag
 export async function deleteFlag(key: string): Promise<void> {
-  const response = await fetch(`/api/flags/${encodeURIComponent(key)}`, {
+  const response = await fetch(`/api/flags/${encodeURIComponent(key.trim())}`, {
     method: "DELETE",
   });
   

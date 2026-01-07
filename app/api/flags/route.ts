@@ -42,20 +42,33 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { key, enabled, batch } = body;
+    const { key, enabled, batch, oldKey, isMaintenance } = body;
     
     const currentFlags = await readFlagsFromS3();
     
     if (batch && Array.isArray(batch)) {
       // Batch update
       batch.forEach((update: { key: string, enabled: boolean }) => {
-        currentFlags[update.key] = update.enabled;
+        const trimmedKey = update.key.trim();
+        if (trimmedKey) {
+          currentFlags[trimmedKey] = update.enabled;
+        }
       });
     } else if (key) {
-      // Single update/create
-      currentFlags[key] = enabled ?? false;
-    } else if (typeof body.isMaintenance === "boolean") {
-        currentFlags.isMaintenance = body.isMaintenance;
+      // Single update/create/rename
+      const trimmedKey = key.trim();
+      const trimmedOldKey = oldKey?.trim();
+
+      if (trimmedOldKey && trimmedOldKey in currentFlags && trimmedOldKey !== trimmedKey) {
+        // Atomic rename: delete old key before setting new one
+        delete currentFlags[trimmedOldKey];
+      }
+      
+      if (trimmedKey) {
+        currentFlags[trimmedKey] = enabled ?? false;
+      }
+    } else if (typeof isMaintenance === "boolean") {
+        currentFlags.isMaintenance = isMaintenance;
     }
     
     await writeFlagsToS3(currentFlags);
