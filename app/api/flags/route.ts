@@ -16,13 +16,12 @@ export async function GET() {
     const flat = await readFlagsFromS3();
     // Convert to array format for frontend and sort alphabetically
     const flags = Object.entries(flat)
-      .filter(([key]) => key !== "isMaintenance")
       .map(([key, enabled]) => ({ key, enabled: enabled as boolean }))
       .sort((a, b) => a.key.localeCompare(b.key));
     
     return NextResponse.json({
+      objectKey: `${process.env.AWS_S3_OBJECT_KEY}`,
       flags,
-      isMaintenance: flat.isMaintenance ?? false
     });
   } catch (error) {
     console.error("API GET Error:", error);

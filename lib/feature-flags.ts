@@ -16,7 +16,7 @@ export function flagsToFlat(flags: FeatureFlag[]): Record<string, boolean> {
 
 
 // Fetcher function for SWR
-const fetcher = async (): Promise<FeatureFlag[]> => {
+const fetcher = async (): Promise<{ flags: FeatureFlag[], objectKey: string }> => {
   const response = await fetch("/api/flags");
   if (!response.ok) {
     throw new Error("Failed to fetch flags");
@@ -25,18 +25,19 @@ const fetcher = async (): Promise<FeatureFlag[]> => {
   
   // Combine flags array and isMaintenance into a single FeatureFlag array for the UI
   const flags: FeatureFlag[] = data.flags || [];
-  if (typeof data.isMaintenance === "boolean") {
-    flags.push({ key: "isMaintenance", enabled: data.isMaintenance });
-  }
-  return flags;
+  const objectKey = data.objectKey;
+  return {
+    flags,
+    objectKey
+  };
 };
 
 // Custom hook to fetch flags
 export function useFeatureFlags() {
-  const { data, error, isLoading, mutate } = useSWR<FeatureFlag[]>("feature-flags", fetcher);
-
+  const { data, error, isLoading, mutate } = useSWR<{ flags: FeatureFlag[], objectKey: string }>("feature-flags", fetcher);
   return {
-    flags: data,
+    flags: data?.flags,
+    objectKey: data?.objectKey,
     isLoading,
     isError: error,
     mutate,

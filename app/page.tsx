@@ -13,7 +13,7 @@ import { Navbar } from "@/components/admin/navbar";
 export default function FlagsPage() {
   const { user, isLoading } = useSession();
   const router = useRouter();
-  const { flags, isLoading: flagsLoading, mutate } = useFeatureFlags();
+  const { flags, objectKey,isLoading: flagsLoading, mutate } = useFeatureFlags();
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -25,11 +25,19 @@ export default function FlagsPage() {
     }
   }, [user, isLoading, router]);
 
+
+
   // Track changes for optimistic UI
   const handleToggleFlag = (key: string, enabled: boolean) => {
     // Optimistically update locally, then mutate
     mutate(
-      flags?.map((f: { key: string; enabled: boolean }) => f.key === key ? { ...f, enabled } : f),
+      (currentData) => {
+        if (!currentData) return currentData;
+        return {
+          ...currentData,
+          flags: currentData.flags.map((f) => f.key === key ? { ...f, enabled } : f),
+        };
+      },
       false
     );
     
@@ -108,6 +116,12 @@ export default function FlagsPage() {
               <p className="text-muted-foreground mt-1">
                 Manage application feature flags and toggles
               </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground mt-2 font-mono inline-block">URL: </span>
+                <p className="text-xs text-muted-foreground mt-2 font-mono bg-muted px-2 py-1 rounded inline-block">
+                {objectKey}
+              </p>
+            </div>
             </div>
           </div>
 
