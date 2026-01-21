@@ -31,7 +31,17 @@ export function AddFlagDialog({ open, onOpenChange, onFlagCreated }: AddFlagDial
 
     try {
       await createFlag(key);
-      
+
+      // Track event
+      if (typeof window !== "undefined" && (window as any).fbq) {
+        (window as any).fbq("track", "SubmitApplication", {
+          content_name: "create_flag",
+          status: true,
+          content_category: "feature_flag",
+          value: key
+        });
+      }
+
       toast.success("Flag created successfully!");
       setKey("");
       onFlagCreated();
@@ -53,7 +63,7 @@ export function AddFlagDialog({ open, onOpenChange, onFlagCreated }: AddFlagDial
               Create a new feature flag to control application behavior
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="key">Flag Key *</Label>
