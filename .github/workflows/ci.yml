@@ -36,3 +36,15 @@ jobs:
 
       - name: Build Project
         run: npm run build
+
+  docker-build:
+    name: Build Docker Image
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t featureflagaz:${{ github.sha }} .
