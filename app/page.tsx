@@ -19,6 +19,7 @@ export default function FlagsPage() {
 
   // Redirect to login if not authenticated
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

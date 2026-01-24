@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
       url.pathname = '/login'
       return NextResponse.redirect(url)
     }
-  } catch (error) {
+  } catch {
     // If auth check fails, redirect to login (except for login page)
     if (!request.nextUrl.pathname.startsWith('/login')) {
       const url = request.nextUrl.clone()

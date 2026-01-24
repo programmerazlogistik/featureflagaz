@@ -33,7 +33,9 @@ export function AddFlagDialog({ open, onOpenChange, onFlagCreated }: AddFlagDial
       await createFlag(key);
 
       // Track event
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (typeof window !== "undefined" && (window as any).fbq) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).fbq("track", "SubmitApplication", {
           content_name: "create_flag",
           status: true,
