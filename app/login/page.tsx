@@ -43,7 +43,7 @@ export default function LoginPage() {
               <Lock className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Admin Login 3</CardTitle>
+          <CardTitle className="text-2xl text-center">Admin Login 4</CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access the admin dashboard
           </CardDescription>
